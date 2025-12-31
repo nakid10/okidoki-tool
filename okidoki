@@ -1,0 +1,70 @@
+okidoki-tool/
+const PATTERNS = [
+  { name:"通常点滅", normal:46.6, normalB:9.5, tengoku:24.1, doki:11.1, super:9.1, freeze:0.2, video:"videos/p01.mp4" },
+  { name:"常灯点灯", normal:37.4, normalB:7.0, tengoku:28.2, doki:14.1, super:12.5, freeze:0.7, video:"videos/p02.mp4" },
+  { name:"リール回転時 点滅", normal:29.9, normalB:3.7, tengoku:30.8, doki:20.0, super:15.2, freeze:0.4, video:"videos/p03.mp4" },
+  { name:"左右二回点滅", normal:32.7, normalB:6.4, tengoku:36.7, doki:12.5, super:11.0, freeze:0.7, video:"videos/p04.mp4" },
+  { name:"瞬き点滅", normal:29.2, normalB:5.8, tengoku:32.9, doki:16.6, super:14.3, freeze:0.6, video:"videos/p05.mp4" },
+  { name:"だんだん高速点滅", normal:29.4, normalB:5.7, tengoku:33.0, doki:16.7, super:14.7, freeze:0.6, video:"videos/p06.mp4" },
+  { name:"右から点滅", normal:29.5, normalB:5.8, tengoku:32.9, doki:16.6, super:14.6, freeze:0.6, video:"videos/p07.mp4" },
+  { name:"花だけ点滅", normal:29.7, normalB:5.8, tengoku:32.7, doki:16.6, super:14.6, freeze:0.6, video:"videos/p08.mp4" },
+  { name:"葉っぱだけ点滅", normal:29.7, normalB:5.8, tengoku:32.9, doki:16.7, super:14.3, freeze:0.6, video:"videos/p09.mp4" },
+  { name:"ぼんやり点滅", normal:24.6, normalB:8.9, tengoku:32.7, doki:16.8, super:15.4, freeze:1.6, video:"videos/p10.mp4" },
+  { name:"薄光り", normal:37.4, normalB:7.4, tengoku:28.0, doki:13.8, super:12.6, freeze:0.8, video:"videos/p11.mp4" },
+  { name:"全体メラメラ点滅", normal:18.7, normalB:8.3, tengoku:36.6, doki:18.2, super:16.8, freeze:1.4, video:"videos/p12.mp4" },
+  { name:"花だけメラメラ点滅", normal:18.6, normalB:8.3, tengoku:36.6, doki:18.9, super:16.2, freeze:1.3, video:"videos/p13.mp4" },
+  { name:"ブリッジ点滅", normal:19.1, normalB:8.3, tengoku:36.6, doki:18.7, super:16.1, freeze:1.3, video:"videos/p14.mp4" },
+  { name:"ストリーム点滅", normal:18.4, normalB:8.7, tengoku:36.5, doki:18.6, super:16.4, freeze:1.3, video:"videos/p15.mp4" },
+
+  { name:"高速点滅", normal:9.1, normalB:17.5, tengoku:40.6, doki:20.6, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p16.mp4" },
+  { name:"スロー点滅", normal:9.0, normalB:17.7, tengoku:40.7, doki:20.5, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p17.mp4" },
+  { name:"常灯から点滅", normal:6.9, normalB:7.9, tengoku:39.3, doki:19.8, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p18.mp4" },
+  { name:"スロー⇒高速点滅", normal:7.4, normalB:8.1, tengoku:38.9, doki:19.5, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p19.mp4" },
+  { name:"337拍子", normal:8.7, normalB:1.7, tengoku:49.9, doki:25.2, super:14.3, freeze:0.2, hint:"天国以上示唆", video:"videos/p20.mp4" },
+
+  { name:"同時点滅", normal:null, normalB:12.4, tengoku:48.1, doki:24.8, super:14.4, freeze:0.2, hint:"通常B以上", video:"videos/p21.mp4" },
+  { name:"通常点滅から同時点滅", normal:null, normalB:12.3, tengoku:48.6, doki:24.4, super:14.5, freeze:0.2, hint:"通常B以上", video:"videos/p22.mp4" },
+  { name:"花と葉っぱ交互点滅", normal:null, normalB:3.1, tengoku:48.9, doki:25.0, super:21.8, freeze:1.2, hint:"通常B以上", video:"videos/p23.mp4" },
+
+  { name:"右のみ点滅", normal:null, normalB:null, tengoku:51.2, doki:25.8, super:22.3, freeze:0.7, hint:"天国以上", video:"videos/p24.mp4" },
+  { name:"点滅時パネル消灯", normal:null, normalB:null, tengoku:50.9, doki:25.7, super:22.5, freeze:0.8, hint:"天国以上", video:"videos/p25.mp4" },
+  { name:"カラフル点滅", normal:null, normalB:null, tengoku:50.8, doki:25.9, super:22.6, freeze:0.8, hint:"天国以上", video:"videos/p26.mp4" },
+
+  { name:"左のみ点滅", normal:null, normalB:null, tengoku:null, doki:53.8, super:45.7, freeze:0.6, hint:"ドキドキ以上", video:"videos/p27.mp4" },
+  { name:"リバースストリーム点滅", normal:null, normalB:null, tengoku:null, doki:53.7, super:44.3, freeze:2.0, hint:"ドキドキ以上", video:"videos/p28.mp4" },
+
+  { name:"通常点滅＋ドキドキランプ点灯", normal:null, normalB:null, tengoku:null, doki:null, super:99.1, freeze:0.9, hint:"超ドキドキ以上", video:"videos/p29.mp4" },
+  { name:"しだれ柳", normal:null, normalB:null, tengoku:null, doki:null, super:97.9, freeze:2.1, hint:"超ドキドキ以上", video:"videos/p30.mp4" }
+];
+├─ index.html
+└─ videos/
+p01  通常点滅
+p02  常灯点灯
+p03  リール回転時 点滅
+p04  左右二回点滅
+p05  瞬き点滅
+p06  だんだん高速点滅
+p07  右から点滅
+p08  花だけ点滅
+p09  葉っぱだけ点滅
+p10  ぼんやり点滅
+p11  薄光り
+p12  全体メラメラ点滅
+p13  花だけメラメラ点滅
+p14  ブリッジ点滅
+p15  ストリーム点滅
+p16  高速点滅（通常B以上示唆）
+p17  スロー点滅（通常B以上示唆）
+p18  常灯から点滅（通常B以上示唆強）
+p19  スロー⇒高速点滅（通常B以上示唆強）
+p20  337拍子（天国以上示唆）
+p21  同時点滅（通常B以上）
+p22  通常点滅から同時点滅（通常B以上）
+p23  花と葉っぱ交互点滅（通常B以上）
+p24  右のみ点滅（天国以上）
+p25  点滅時パネル消灯（天国以上）
+p26  カラフル点滅（天国以上）
+p27  左のみ点滅（ドキドキ以上）
+p28  リバースストリーム点滅（ドキドキ以上）
+p29  通常点滅＋ドキドキランプ点灯（超ドキドキ以上）
+p30  しだれ柳（超ドキドキ以上）
