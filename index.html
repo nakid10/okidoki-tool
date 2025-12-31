@@ -1,70 +1,535 @@
-okidoki-tool/
-const PATTERNS = [
-  { name:"通常点滅", normal:46.6, normalB:9.5, tengoku:24.1, doki:11.1, super:9.1, freeze:0.2, video:"videos/p01.mp4" },
-  { name:"常灯点灯", normal:37.4, normalB:7.0, tengoku:28.2, doki:14.1, super:12.5, freeze:0.7, video:"videos/p02.mp4" },
-  { name:"リール回転時 点滅", normal:29.9, normalB:3.7, tengoku:30.8, doki:20.0, super:15.2, freeze:0.4, video:"videos/p03.mp4" },
-  { name:"左右二回点滅", normal:32.7, normalB:6.4, tengoku:36.7, doki:12.5, super:11.0, freeze:0.7, video:"videos/p04.mp4" },
-  { name:"瞬き点滅", normal:29.2, normalB:5.8, tengoku:32.9, doki:16.6, super:14.3, freeze:0.6, video:"videos/p05.mp4" },
-  { name:"だんだん高速点滅", normal:29.4, normalB:5.7, tengoku:33.0, doki:16.7, super:14.7, freeze:0.6, video:"videos/p06.mp4" },
-  { name:"右から点滅", normal:29.5, normalB:5.8, tengoku:32.9, doki:16.6, super:14.6, freeze:0.6, video:"videos/p07.mp4" },
-  { name:"花だけ点滅", normal:29.7, normalB:5.8, tengoku:32.7, doki:16.6, super:14.6, freeze:0.6, video:"videos/p08.mp4" },
-  { name:"葉っぱだけ点滅", normal:29.7, normalB:5.8, tengoku:32.9, doki:16.7, super:14.3, freeze:0.6, video:"videos/p09.mp4" },
-  { name:"ぼんやり点滅", normal:24.6, normalB:8.9, tengoku:32.7, doki:16.8, super:15.4, freeze:1.6, video:"videos/p10.mp4" },
-  { name:"薄光り", normal:37.4, normalB:7.4, tengoku:28.0, doki:13.8, super:12.6, freeze:0.8, video:"videos/p11.mp4" },
-  { name:"全体メラメラ点滅", normal:18.7, normalB:8.3, tengoku:36.6, doki:18.2, super:16.8, freeze:1.4, video:"videos/p12.mp4" },
-  { name:"花だけメラメラ点滅", normal:18.6, normalB:8.3, tengoku:36.6, doki:18.9, super:16.2, freeze:1.3, video:"videos/p13.mp4" },
-  { name:"ブリッジ点滅", normal:19.1, normalB:8.3, tengoku:36.6, doki:18.7, super:16.1, freeze:1.3, video:"videos/p14.mp4" },
-  { name:"ストリーム点滅", normal:18.4, normalB:8.7, tengoku:36.5, doki:18.6, super:16.4, freeze:1.3, video:"videos/p15.mp4" },
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>沖ドキ：天国間＋点滅判定</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;background:#f6f6f6;color:#111}
+    header{position:sticky;top:0;background:#fff;border-bottom:1px solid #ddd;padding:12px;z-index:10}
+    h1{font-size:18px;margin:0}
+    main{max-width:860px;margin:0 auto;padding:12px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .tab{padding:8px 10px;border:1px solid #ddd;border-radius:999px;background:#fff;font-size:14px;cursor:pointer}
+    .tab.active{border-color:#111;background:#111;color:#fff}
 
-  { name:"高速点滅", normal:9.1, normalB:17.5, tengoku:40.6, doki:20.6, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p16.mp4" },
-  { name:"スロー点滅", normal:9.0, normalB:17.7, tengoku:40.7, doki:20.5, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p17.mp4" },
-  { name:"常灯から点滅", normal:6.9, normalB:7.9, tengoku:39.3, doki:19.8, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p18.mp4" },
-  { name:"スロー⇒高速点滅", normal:7.4, normalB:8.1, tengoku:38.9, doki:19.5, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p19.mp4" },
-  { name:"337拍子", normal:8.7, normalB:1.7, tengoku:49.9, doki:25.2, super:14.3, freeze:0.2, hint:"天国以上示唆", video:"videos/p20.mp4" },
+    .card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:12px;margin-bottom:12px}
+    label{display:block;font-size:12px;color:#444;margin-top:10px}
+    input, select{width:100%;font-size:18px;padding:10px;border:1px solid #ccc;border-radius:12px;box-sizing:border-box}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > div{flex:1; min-width: 160px;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid #ddd;background:#fff;font-size:14px;cursor:pointer}
+    .btn.primary{border-color:#111;background:#111;color:#fff}
+    .btn.danger{border-color:#c62828;color:#c62828;background:#fff}
+    .muted{font-size:12px;color:#666;margin-top:6px}
+    .result{font-size:22px;font-weight:800;margin-top:10px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;border:1px solid #ddd}
+    .ok{background:#e8f5e9;color:#1b5e20;border-color:#c8e6c9}
+    .warn{background:#fff3e0;color:#e65100;border-color:#ffe0b2}
+    .bad{background:#ffebee;color:#b71c1c;border-color:#ffcdd2}
 
-  { name:"同時点滅", normal:null, normalB:12.4, tengoku:48.1, doki:24.8, super:14.4, freeze:0.2, hint:"通常B以上", video:"videos/p21.mp4" },
-  { name:"通常点滅から同時点滅", normal:null, normalB:12.3, tengoku:48.6, doki:24.4, super:14.5, freeze:0.2, hint:"通常B以上", video:"videos/p22.mp4" },
-  { name:"花と葉っぱ交互点滅", normal:null, normalB:3.1, tengoku:48.9, doki:25.0, super:21.8, freeze:1.2, hint:"通常B以上", video:"videos/p23.mp4" },
+    .list{margin-top:8px}
+    .item{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .item input{flex:1}
+    .item .idx{width:28px;text-align:center;font-size:12px;color:#666}
+    .footerbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 
-  { name:"右のみ点滅", normal:null, normalB:null, tengoku:51.2, doki:25.8, super:22.3, freeze:0.7, hint:"天国以上", video:"videos/p24.mp4" },
-  { name:"点滅時パネル消灯", normal:null, normalB:null, tengoku:50.9, doki:25.7, super:22.5, freeze:0.8, hint:"天国以上", video:"videos/p25.mp4" },
-  { name:"カラフル点滅", normal:null, normalB:null, tengoku:50.8, doki:25.9, super:22.6, freeze:0.8, hint:"天国以上", video:"videos/p26.mp4" },
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border-bottom:1px solid #eee;padding:8px;text-align:left;font-size:14px}
+    th{font-size:12px;color:#555}
 
-  { name:"左のみ点滅", normal:null, normalB:null, tengoku:null, doki:53.8, super:45.7, freeze:0.6, hint:"ドキドキ以上", video:"videos/p27.mp4" },
-  { name:"リバースストリーム点滅", normal:null, normalB:null, tengoku:null, doki:53.7, super:44.3, freeze:2.0, hint:"ドキドキ以上", video:"videos/p28.mp4" },
+    .videoBox{border:1px solid #ddd;border-radius:14px;overflow:hidden;background:#000}
+    video{width:100%;height:auto;display:block}
+    .videoFallback{padding:14px;color:#fff;background:#111;font-size:13px}
+    .kpi{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 
-  { name:"通常点滅＋ドキドキランプ点灯", normal:null, normalB:null, tengoku:null, doki:null, super:99.1, freeze:0.9, hint:"超ドキドキ以上", video:"videos/p29.mp4" },
-  { name:"しだれ柳", normal:null, normalB:null, tengoku:null, doki:null, super:97.9, freeze:2.1, hint:"超ドキドキ以上", video:"videos/p30.mp4" }
+    /* 最大値＝赤、最小値＝青 */
+    .maxProb{color:#d32f2f;font-weight:900;}
+    .minProb{color:#1976d2;font-weight:900;}
+
+    .searchRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .searchRow input{flex:1;min-width:220px}
+    .selectRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .selectRow select{flex:1;min-width:240px}
+  </style>
+</head>
+<body>
+<header>
+  <h1>沖ドキ：天国間＋点滅判定</h1>
+  <div class="tabs">
+    <button class="tab active" data-page="p1" type="button">天国間</button>
+    <button class="tab" data-page="p2" type="button">点滅判定</button>
+  </div>
+</header>
+
+<main>
+  <!-- ========== 天国間 ========== -->
+  <section class="page" id="p1">
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>現在ゲーム数（いまのG）</label>
+          <input id="nowG" inputmode="numeric" placeholder="例：420">
+        </div>
+        <div>
+          <label>天井（固定）</label>
+          <input id="ceiling" inputmode="numeric" value="1000">
+        </div>
+      </div>
+
+      <label>スルーしたゲーム数（履歴）</label>
+      <div class="muted">過去のスルーGを追加。空欄は数えません。</div>
+      <div id="list" class="list"></div>
+
+      <div class="footerbtns">
+        <button class="btn primary" id="addBtn" type="button">＋ 履歴を追加</button>
+        <button class="btn" id="recalcBtn" type="button">再計算</button>
+        <button class="btn danger" id="clearBtn" type="button">入力を全消去</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div id="status"></div>
+
+      <div class="result" id="sumOut">天国間：— G</div>
+      <div class="muted" id="throughOut">スルー回数：— 回</div>
+
+      <div class="row" style="margin-top:8px">
+        <div>
+          <div class="muted">天井までの残りG</div>
+          <div class="result" id="remainG">— G</div>
+        </div>
+        <div>
+          <div class="muted">必要枚数（概算 / 32G・50枚固定）</div>
+          <div class="result" id="needMedal">— 枚</div>
+        </div>
+      </div>
+
+      <label>換金レート</label>
+      <div class="footerbtns">
+        <button class="btn" id="rate50" type="button">等価：50枚=1000円</button>
+        <button class="btn" id="rate46" type="button">非等価：46枚=1000円</button>
+      </div>
+      <div class="result" id="needYen" style="margin-top:8px">必要金額：—</div>
+      <div class="muted">金額＝必要枚数 ÷（46 or 50）×1000円（概算）</div>
+    </div>
+  </section>
+
+  <!-- ========== 点滅判定 ========== -->
+  <section class="page" id="p2" style="display:none">
+    <div class="card">
+      <div class="searchRow">
+        <div style="flex:1">
+          <label>点滅名 検索</label>
+          <input id="search" placeholder="例：ストリーム / 同時点滅 / しだれ柳">
+          <div class="muted">部分一致OK。入力すると候補が絞られます。</div>
+        </div>
+      </div>
+
+      <div class="selectRow">
+        <div style="flex:1">
+          <label>点滅を選ぶ</label>
+          <select id="patternSelect"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="muted">点滅動画（GitHub Pagesの videos/ 参照）</div>
+      <div class="videoBox" id="videoBox">
+        <video id="patternVideo" muted playsinline loop controls></video>
+        <div id="videoFallback" class="videoFallback" style="display:none">この点滅は動画なし（ファイル未配置）</div>
+      </div>
+
+      <div class="kpi" id="kpi"></div>
+      <div class="result" id="advice" style="font-size:16px;margin-top:8px"></div>
+
+      <table id="probTable">
+        <thead>
+          <tr>
+            <th>次回モード</th>
+            <th>期待度（最大=赤 / 最小=青）</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="muted" style="margin-top:10px">※「–」はデータなし（0ではなく不明/対象外）</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  // ========= 動画参照のベースURL（あなたのGitHub Pages） =========
+  const BASE_URL = "https://nakid10.github.io/okidoki-tool/";
+  function resolveUrl(p){
+    if(!p) return "";
+    if(/^https?:\/\//i.test(p)) return p;
+    return BASE_URL + p.replace(/^\.?\//, "");
+  }
+
+  // ========= 点滅データ（p01〜p30：一覧順） =========
+  const PATTERNS = [
+    {name:"通常点滅", normal:46.6, normalB:9.5, tengoku:24.1, doki:11.1, super:9.1, freeze:0.2, video:"videos/p01.mp4"},
+    {name:"常灯点灯", normal:37.4, normalB:7.0, tengoku:28.2, doki:14.1, super:12.5, freeze:0.7, video:"videos/p02.mp4"},
+    {name:"リール回転時 点滅", normal:29.9, normalB:3.7, tengoku:30.8, doki:20.0, super:15.2, freeze:0.4, video:"videos/p03.mp4"},
+    {name:"左右二回点滅", normal:32.7, normalB:6.4, tengoku:36.7, doki:12.5, super:11.0, freeze:0.7, video:"videos/p04.mp4"},
+    {name:"瞬き点滅", normal:29.2, normalB:5.8, tengoku:32.9, doki:16.6, super:14.3, freeze:0.6, video:"videos/p05.mp4"},
+    {name:"だんだん高速点滅", normal:29.4, normalB:5.7, tengoku:33.0, doki:16.7, super:14.7, freeze:0.6, video:"videos/p06.mp4"},
+    {name:"右から点滅", normal:29.5, normalB:5.8, tengoku:32.9, doki:16.6, super:14.6, freeze:0.6, video:"videos/p07.mp4"},
+    {name:"花だけ点滅", normal:29.7, normalB:5.8, tengoku:32.7, doki:16.6, super:14.6, freeze:0.6, video:"videos/p08.mp4"},
+    {name:"葉っぱだけ点滅", normal:29.7, normalB:5.8, tengoku:32.9, doki:16.7, super:14.3, freeze:0.6, video:"videos/p09.mp4"},
+    {name:"ぼんやり点滅", normal:24.6, normalB:8.9, tengoku:32.7, doki:16.8, super:15.4, freeze:1.6, video:"videos/p10.mp4"},
+    {name:"薄光り", normal:37.4, normalB:7.4, tengoku:28.0, doki:13.8, super:12.6, freeze:0.8, video:"videos/p11.mp4"},
+    {name:"全体メラメラ点滅", normal:18.7, normalB:8.3, tengoku:36.6, doki:18.2, super:16.8, freeze:1.4, video:"videos/p12.mp4"},
+    {name:"花だけメラメラ点滅", normal:18.6, normalB:8.3, tengoku:36.6, doki:18.9, super:16.2, freeze:1.3, video:"videos/p13.mp4"},
+    {name:"ブリッジ点滅", normal:19.1, normalB:8.3, tengoku:36.6, doki:18.7, super:16.1, freeze:1.3, video:"videos/p14.mp4"},
+    {name:"ストリーム点滅", normal:18.4, normalB:8.7, tengoku:36.5, doki:18.6, super:16.4, freeze:1.3, video:"videos/p15.mp4"},
+    {name:"高速点滅", normal:9.1, normalB:17.5, tengoku:40.6, doki:20.6, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p16.mp4"},
+    {name:"スロー点滅", normal:9.0, normalB:17.7, tengoku:40.7, doki:20.5, super:11.9, freeze:0.2, hint:"通常B以上示唆", video:"videos/p17.mp4"},
+    {name:"常灯から点滅", normal:6.9, normalB:7.9, tengoku:39.3, doki:19.8, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p18.mp4"},
+    {name:"スロー⇒高速点滅", normal:7.4, normalB:8.1, tengoku:38.9, doki:19.5, super:24.9, freeze:1.2, hint:"通常B以上示唆強", video:"videos/p19.mp4"},
+    {name:"337拍子", normal:8.7, normalB:1.7, tengoku:49.9, doki:25.2, super:14.3, freeze:0.2, hint:"天国以上示唆", video:"videos/p20.mp4"},
+    {name:"同時点滅", normal:null, normalB:12.4, tengoku:48.1, doki:24.8, super:14.4, freeze:0.2, hint:"通常B以上", video:"videos/p21.mp4"},
+    {name:"通常点滅から同時点滅", normal:null, normalB:12.3, tengoku:48.6, doki:24.4, super:14.5, freeze:0.2, hint:"通常B以上", video:"videos/p22.mp4"},
+    {name:"花と葉っぱ交互点滅", normal:null, normalB:3.1, tengoku:48.9, doki:25.0, super:21.8, freeze:1.2, hint:"通常B以上", video:"videos/p23.mp4"},
+    {name:"右のみ点滅", normal:null, normalB:null, tengoku:51.2, doki:25.8, super:22.3, freeze:0.7, hint:"天国以上", video:"videos/p24.mp4"},
+    {name:"点滅時パネル消灯", normal:null, normalB:null, tengoku:50.9, doki:25.7, super:22.5, freeze:0.8, hint:"天国以上", video:"videos/p25.mp4"},
+    {name:"カラフル点滅", normal:null, normalB:null, tengoku:50.8, doki:25.9, super:22.6, freeze:0.8, hint:"天国以上", video:"videos/p26.mp4"},
+    {name:"左のみ点滅", normal:null, normalB:null, tengoku:null, doki:53.8, super:45.7, freeze:0.6, hint:"ドキドキ以上", video:"videos/p27.mp4"},
+    {name:"リバースストリーム点滅", normal:null, normalB:null, tengoku:null, doki:53.7, super:44.3, freeze:2.0, hint:"ドキドキ以上", video:"videos/p28.mp4"},
+    {name:"通常点滅＋ドキドキランプ点灯", normal:null, normalB:null, tengoku:null, doki:null, super:99.1, freeze:0.9, hint:"超ドキドキ以上", video:"videos/p29.mp4"},
+    {name:"しだれ柳", normal:null, normalB:null, tengoku:null, doki:null, super:97.9, freeze:2.1, hint:"超ドキドキ以上", video:"videos/p30.mp4"},
+  ];
+
+  // ========= タブ切替（これが壊れてた） =========
+  const pages = ["p1","p2"];
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const target = btn.dataset.page;
+      pages.forEach(id => document.getElementById(id).style.display = (id===target ? "block" : "none"));
+      // 画面切替後に動画の再生を軽く試す（失敗してもOK）
+      if(target==="p2"){
+        const v = document.getElementById("patternVideo");
+        const pr = v && v.play ? v.play() : null;
+        if(pr && pr.catch) pr.catch(()=>{});
+      }
+    });
+  });
+
+  // ========= 天国間（保存つき） =========
+  const STORAGE_KEY = "okidoki_tengoku_v4";
+  const DEFAULT_ROWS = 3;
+
+  const nowG = document.getElementById("nowG");
+  const ceiling = document.getElementById("ceiling");
+  const list = document.getElementById("list");
+  const addBtn = document.getElementById("addBtn");
+  const recalcBtn = document.getElementById("recalcBtn");
+  const clearBtn = document.getElementById("clearBtn");
+
+  const rate50 = document.getElementById("rate50");
+  const rate46 = document.getElementById("rate46");
+
+  const status = document.getElementById("status");
+  const sumOut = document.getElementById("sumOut");
+  const throughOut = document.getElementById("throughOut");
+  const remainG = document.getElementById("remainG");
+  const needMedal = document.getElementById("needMedal");
+  const needYen = document.getElementById("needYen");
+
+  let rows = [];
+  let rateMode = "50";
+
+  function toNum(x){ const n = Number(x); return Number.isFinite(n) ? n : 0; }
+
+  function setStatusPill(type, text){
+    status.innerHTML = "";
+    const span = document.createElement("span");
+    span.className = `pill ${type}`;
+    span.textContent = text;
+    status.appendChild(span);
+  }
+
+  function applyRateUI(){
+    rate50.classList.toggle("primary", rateMode === "50");
+    rate46.classList.toggle("primary", rateMode === "46");
+  }
+
+  function saveT(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      nowG: nowG.value,
+      ceiling: ceiling.value,
+      rows: rows.map(r=>r.value),
+      rateMode
+    }));
+  }
+
+  function loadT(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    try{
+      const data = JSON.parse(raw);
+      nowG.value = data.nowG ?? "";
+      ceiling.value = data.ceiling ?? "1000";
+      rateMode = (data.rateMode === "46") ? "46" : "50";
+      const arr = Array.isArray(data.rows) ? data.rows : [];
+      rows = arr.map((v,i)=>({id:i+1, value:String(v ?? "")}));
+      return true;
+    }catch{
+      return false;
+    }
+  }
+
+  function renderRows(){
+    list.innerHTML = "";
+    rows.forEach((r, idx) => {
+      const wrap = document.createElement("div");
+      wrap.className = "item";
+
+      const idxEl = document.createElement("div");
+      idxEl.className = "idx";
+      idxEl.textContent = String(idx + 1);
+
+      const inp = document.createElement("input");
+      inp.inputMode = "numeric";
+      inp.placeholder = "例：128";
+      inp.value = r.value;
+      inp.addEventListener("input", () => {
+        r.value = inp.value;
+        saveT(); recalcT();
+      });
+
+      const del = document.createElement("button");
+      del.className = "btn";
+      del.type = "button";
+      del.textContent = "削除";
+      del.addEventListener("click", () => {
+        rows = rows.filter(x => x.id !== r.id);
+        if(rows.length === 0) rows.push({id:1, value:""});
+        saveT();
+        renderRows();
+        recalcT();
+      });
+
+      wrap.appendChild(idxEl);
+      wrap.appendChild(inp);
+      wrap.appendChild(del);
+      list.appendChild(wrap);
+    });
+  }
+
+  function recalcT(){
+    const now = toNum(nowG.value);
+    const cap = Math.max(0, toNum(ceiling.value) || 1000);
+
+    const throughNums = rows.map(r=>r.value.trim()).filter(s=>s!=="").map(s=>toNum(s));
+    const throughSum = throughNums.reduce((a,b)=>a+b,0);
+    const throughCount = throughNums.length;
+
+    const tengokuBetween = now + throughSum;
+    sumOut.textContent = `天国間：${tengokuBetween} G`;
+    throughOut.textContent = `スルー回数：${throughCount} 回（履歴合計 ${throughSum}G）`;
+
+    if(tengokuBetween >= 1500) setStatusPill("ok","有利切れ狙える（天国間1500G以上）");
+    else if(tengokuBetween >= 1200) setStatusPill("warn","あと少し（天国間1500G未満）");
+    else setStatusPill("bad","まだ浅い（天国間1500G未満）");
+
+    const remain = Math.max(0, cap - now);
+    remainG.textContent = `${remain} G`;
+
+    // 32Gで50枚消費（概算）
+    const need = Math.ceil(remain * 50 / 32);
+    needMedal.textContent = `${need} 枚`;
+
+    const denom = (rateMode === "46") ? 46 : 50;
+    const yen = Math.ceil(need / denom * 1000);
+    needYen.textContent = `必要金額：${yen.toLocaleString()} 円（概算）`;
+  }
+
+  const loaded = loadT();
+  if(!loaded) rows = Array.from({length: DEFAULT_ROWS}, (_,i)=>({id:i+1, value:""}));
+  applyRateUI();
+  renderRows();
+  recalcT();
+
+  [nowG, ceiling].forEach(el=>el.addEventListener("input", ()=>{saveT(); recalcT();}));
+
+  addBtn.addEventListener("click", ()=>{
+    const nextId = rows.length ? Math.max(...rows.map(r=>r.id)) + 1 : 1;
+    rows.push({id: nextId, value:""});
+    saveT();
+    renderRows();
+  });
+
+  recalcBtn.addEventListener("click", recalcT);
+
+  clearBtn.addEventListener("click", ()=>{
+    localStorage.removeItem(STORAGE_KEY);
+    nowG.value = "";
+    ceiling.value = "1000";
+    rateMode = "50";
+    rows = Array.from({length: DEFAULT_ROWS}, (_,i)=>({id:i+1, value:""}));
+    applyRateUI();
+    renderRows();
+    recalcT();
+  });
+
+  rate50.addEventListener("click", ()=>{rateMode="50"; applyRateUI(); saveT(); recalcT();});
+  rate46.addEventListener("click", ()=>{rateMode="46"; applyRateUI(); saveT(); recalcT();});
+
+  // ========= 点滅判定（検索＋動画＋色分け＋メッセージ） =========
+  const search = document.getElementById("search");
+  const select = document.getElementById("patternSelect");
+  const video = document.getElementById("patternVideo");
+  const videoFallback = document.getElementById("videoFallback");
+  const kpi = document.getElementById("kpi");
+  const advice = document.getElementById("advice");
+  const tbody = document.querySelector("#probTable tbody");
+
+  function formatPct(v){
+    if(v === null || v === undefined) return "–";
+    return `${Number(v).toFixed(1)}%`;
+  }
+
+  function sumIfNotNull(...vals){
+    const nums = vals.filter(v => typeof v === "number" && Number.isFinite(v));
+    if(nums.length === 0) return null;
+    return nums.reduce((a,b)=>a+b,0);
+  }
+
+  function buildOptions(filterText=""){
+    const ft = filterText.trim().toLowerCase();
+    const filtered = PATTERNS.filter(p => p.name.toLowerCase().includes(ft));
+    select.innerHTML = "";
+    filtered.forEach((p)=>{
+      const opt = document.createElement("option");
+      opt.value = p.name;
+      opt.textContent = p.hint ? `${p.name}（${p.hint}）` : p.name;
+      select.appendChild(opt);
+    });
+
+    if(filtered.length === 0){
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "一致なし";
+      select.appendChild(opt);
+    }
+
+    updatePattern(filtered[0] ?? null);
+  }
+
+  function updatePattern(p){
+    kpi.innerHTML = "";
+    tbody.innerHTML = "";
+    advice.textContent = "";
+
+    if(!p){
+      video.removeAttribute("src");
+      videoFallback.style.display="block";
+      return;
+    }
+
+    // 動画
+    const url = resolveUrl(p.video || "");
+    if(url){
+      videoFallback.style.display="none";
+      video.style.display="block";
+      video.src = url;
+
+      // 読み込みエラーなら「動画なし」表示
+      video.onerror = () => {
+        video.removeAttribute("src");
+        video.load();
+        videoFallback.style.display="block";
+      };
+
+      // iOS：再生を試す（失敗してもOK）
+      const pr = video.play();
+      if(pr && pr.catch) pr.catch(()=>{});
+    }else{
+      video.removeAttribute("src");
+      video.load();
+      videoFallback.style.display="block";
+    }
+
+    // KPI（合算）
+    const tengokuUp = sumIfNotNull(p.tengoku, p.doki, p.super, p.freeze);
+    const dokiUp = sumIfNotNull(p.doki, p.super, p.freeze);
+    const superUp = sumIfNotNull(p.super, p.freeze);
+
+    const pills = [
+      {label:"天国以上", val:tengokuUp},
+      {label:"ドキドキ以上", val:dokiUp},
+      {label:"超ドキ以上", val:superUp},
+    ];
+
+    pills.forEach(x=>{
+      const span = document.createElement("span");
+      span.className = "pill ok";
+      span.textContent = `${x.label}：${x.val === null ? "–" : x.val.toFixed(1) + "%"}`;
+      kpi.appendChild(span);
+    });
+
+    // テーブル（最大＝赤、最小＝青）
+    const rows = [
+  ["通常", p.normal],
+  ["通常B", p.normalB],
+  ["天国", p.tengoku],
+  ["ドキドキ", p.doki],
+  ["超ドキドキ", p.super],
+  ["フリーズ時", p.freeze],
 ];
-├─ index.html
-└─ videos/
-p01  通常点滅
-p02  常灯点灯
-p03  リール回転時 点滅
-p04  左右二回点滅
-p05  瞬き点滅
-p06  だんだん高速点滅
-p07  右から点滅
-p08  花だけ点滅
-p09  葉っぱだけ点滅
-p10  ぼんやり点滅
-p11  薄光り
-p12  全体メラメラ点滅
-p13  花だけメラメラ点滅
-p14  ブリッジ点滅
-p15  ストリーム点滅
-p16  高速点滅（通常B以上示唆）
-p17  スロー点滅（通常B以上示唆）
-p18  常灯から点滅（通常B以上示唆強）
-p19  スロー⇒高速点滅（通常B以上示唆強）
-p20  337拍子（天国以上示唆）
-p21  同時点滅（通常B以上）
-p22  通常点滅から同時点滅（通常B以上）
-p23  花と葉っぱ交互点滅（通常B以上）
-p24  右のみ点滅（天国以上）
-p25  点滅時パネル消灯（天国以上）
-p26  カラフル点滅（天国以上）
-p27  左のみ点滅（ドキドキ以上）
-p28  リバースストリーム点滅（ドキドキ以上）
-p29  通常点滅＋ドキドキランプ点灯（超ドキドキ以上）
-p30  しだれ柳（超ドキドキ以上）
+
+// ★色付け対象から「フリーズ時」を除外して max/min を決める
+const nums = rows
+  .filter(r => r[0] !== "フリーズ時")
+  .map(r => r[1])
+  .filter(v => typeof v === "number" && Number.isFinite(v));
+
+const max = nums.length ? Math.max(...nums) : null;
+const min = nums.length ? Math.min(...nums) : null;
+  
+    rows.forEach(([label, v])=>{
+      const tr = document.createElement("tr");
+      const td1 = document.createElement("td");
+      const td2 = document.createElement("td");
+      td1.textContent = label;
+      td2.textContent = formatPct(v);
+
+      if(max !== null && v === max) td2.classList.add("maxProb");
+      if(min !== null && v === min) td2.classList.add("minProb");
+
+      tr.appendChild(td1);
+      tr.appendChild(td2);
+      tbody.appendChild(tr);
+    });
+
+    // 通常B以上が高いならメッセージ
+    const bPlus = [p.normalB, p.tengoku, p.doki, p.super, p.freeze]
+      .filter(v => typeof v === "number" && Number.isFinite(v))
+      .reduce((a,b)=>a+b,0);
+
+    if (bPlus >= 60) {
+      advice.textContent = `通常B以上が高め（${bPlus.toFixed(1)}%）→ もう1回当たりまで様子見推奨`;
+    } else {
+      advice.textContent = `通常B以上：${bPlus.toFixed(1)}%`;
+    }
+  }
+
+  // 初期
+  buildOptions("");
+  search.addEventListener("input", ()=> buildOptions(search.value));
+  select.addEventListener("change", ()=>{
+    const name = select.value;
+    const p = PATTERNS.find(x=>x.name === name);
+    updatePattern(p ?? null);
+  });
+
+})();
+</script>
+</body>
+</html>
